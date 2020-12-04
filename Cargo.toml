@@ -1,0 +1,17 @@
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.htmlx
+
+[package]
+name = "git-repo"
+version = "0.1.0"
+authors = ["Florentin Dubois <florentin.dubois@hey.com>"]
+edition = "2018"
+
+[dependencies]
+config = "0.10.1"
+paw = "^1.0.0"
+serde = { version = "1.0.117", features = ["derive"] }
+slog = "2.7.0"
+slog-async = "2.5.0"
+slog-scope = "4.3.0"
+slog-term = "2.6.0"
+structopt = { version = "^0.3.21", features = ["paw"] }
