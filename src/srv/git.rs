@@ -5,8 +5,12 @@ use std::error::Error;
 use std::path::PathBuf;
 
 use git2::build::RepoBuilder;
-use git2::{Config, Cred, CredentialHelper, FetchOptions, RemoteCallbacks, Repository};
+use git2::{
+    AutotagOption, Config, Cred, CredentialHelper, FetchOptions, RemoteCallbacks, Repository,
+};
 use snafu::Snafu;
+
+use crate::cfg;
 
 #[derive(Snafu, Debug)]
 pub enum GitError {
@@ -21,6 +25,12 @@ pub enum GitError {
         path: PathBuf,
         err: git2::Error,
     },
+    #[snafu(display(
+        "failed to pull repository '{}', {}",
+        path.display(),
+        err
+    ))]
+    Pull { path: PathBuf, err: git2::Error },
 }
 
 pub fn extract_name(origin: &PathBuf, name: &Option<String>) -> Option<String> {
@@ -42,6 +52,7 @@ pub fn extract_name(origin: &PathBuf, name: &Option<String>) -> Option<String> {
 // - https://github.com/rust-lang/cargo/blob/bb28e71202260180ecff658cd0fa0c7ba86d0296/src/cargo/sources/git/utils.rs#L344-L391
 fn build_fetch_options<'callback>() -> FetchOptions<'callback> {
     let mut callback = RemoteCallbacks::new();
+
     callback.credentials(|url, username, kind| {
         let config = Config::open_default()?;
         let mut helper = CredentialHelper::new(url);
@@ -68,6 +79,7 @@ fn build_fetch_options<'callback>() -> FetchOptions<'callback> {
 
     let mut opts = FetchOptions::new();
     opts.remote_callbacks(callback);
+    opts.download_tags(AutotagOption::All);
     opts
 }
 
@@ -82,4 +94,13 @@ pub fn clone(origin: &PathBuf, path: &PathBuf) -> Result<Repository, Box<dyn Err
             path: path.to_owned(),
             err,
         })?)
+}
+
+pub fn pull(repository: &cfg::Repository) -> Result<Repository, Box<dyn Error + Send + Sync>> {
+    let repo = Repository::open(&repository.path).map_err(|err| GitError::Pull {
+        path: repository.path.to_owned(),
+        err,
+    })?;
+
+    Ok(repo)
 }

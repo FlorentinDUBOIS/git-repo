@@ -1,17 +1,18 @@
 //! # Configuration module
 //!
 //! This module export all stuffs to serialize, deserialize and interact with the configuration
+use std::collections::hash_map::Iter;
+use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::error::Error;
 use std::fs;
 use std::io;
+use std::io::Write;
 use std::path::PathBuf;
 
 use config::{Config, ConfigError, File};
 use serde::{Deserialize, Serialize};
 use snafu::Snafu;
-use std::collections::HashMap;
-use std::io::Write;
 
 #[derive(Snafu, Debug)]
 pub enum ConfigurationError {
@@ -120,6 +121,11 @@ impl Configuration {
     #[inline]
     pub fn remove(&mut self, name: &str) -> Option<Repository> {
         self.repositories.remove(name)
+    }
+
+    #[inline]
+    pub fn iter(&self) -> Iter<String, Repository> {
+        self.repositories.iter()
     }
 
     pub fn save(&self) -> Result<(), Box<dyn Error + Send + Sync>> {

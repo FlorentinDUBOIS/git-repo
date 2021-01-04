@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 config = "^0.10.1"
-git2 = "^0.13.12"
+git2 = "^0.13.13"
 paw = "^1.0.0"
 serde = { version = "^1.0.118", features = ["derive"] }
 slog = "^2.7.0"
@@ -17,4 +17,4 @@ slog-scope = "^4.3.0"
 slog-term = "^2.6.0"
 snafu = "^0.6.10"
 structopt = { version = "^0.3.21", features = ["paw"] }
-toml = "^0.5.7"
+toml = "^0.5.8"

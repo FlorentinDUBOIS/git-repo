@@ -96,6 +96,11 @@ pub enum CommandError {
     ResolvePath { err: io::Error, path: PathBuf },
     #[snafu(display("failed to delete git repository '{}', {}", path.display(), err))]
     DeletePath { err: io::Error, path: PathBuf },
+    #[snafu(display("failed to pull repository '{}', {}", name, err))]
+    Pull {
+        name: String,
+        err: Box<dyn Error + Send + Sync>,
+    },
 }
 
 pub fn add(
@@ -164,10 +169,28 @@ pub fn remove(
 }
 
 pub fn pull(
-    _config: Rc<RefCell<Configuration>>,
-    _name: &Option<String>,
+    config: Rc<RefCell<Configuration>>,
+    name: &Option<String>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    unimplemented!()
+    if let Some(name) = name {
+        if let Some(repo) = config.borrow().get(name) {
+            git::pull(repo).map_err(|err| CommandError::Pull {
+                name: name.to_owned(),
+                err,
+            })?;
+        }
+
+        return Ok(());
+    }
+
+    for (name, repo) in config.borrow().iter() {
+        git::pull(repo).map_err(|err| CommandError::Pull {
+            name: name.to_owned(),
+            err,
+        })?;
+    }
+
+    Ok(())
 }
 
 pub fn status(
